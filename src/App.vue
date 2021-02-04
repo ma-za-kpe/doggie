@@ -1,41 +1,37 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">DOGS</span>
-        <v-icon x-large>mdi-dog</v-icon>
-      </v-btn>
-      <v-spacer></v-spacer>
-      <Shop />
-      <Search />
-    </v-app-bar>
-
+    <Nav />
     <v-main>
-      <Home />
+      <router-view />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Home from "./views/Home";
-import Search from "./components/tools/Search";
-import Shop from "./components/tools/Shop";
+import Nav from "./components/layout/Nav";
+
+// import firebase from "firebase";
 
 export default {
   name: "App",
 
   components: {
-    Home,
-    Search,
-    Shop,
+    Nav,
   },
 
   data: () => ({
     //
   }),
+  // mounted() {
+  //   firebase.auth().onAuthStateChanged(function (user) {
+  //     if (user) {
+  //       // User is signed in.
+  //       console.log("User is signed in");
+  //     } else {
+  //       // No user is signed in.
+  //       console.log("No User is signed in");
+  //     }
+  //   });
+  // },
 };
 </script>

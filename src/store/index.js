@@ -3,6 +3,11 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 
+// import firebase from "./../firebase/firebase";
+import "firebaseui/dist/firebaseui.css";
+import * as firebaseui from "firebaseui";
+import firebase from "firebase";
+
 import Localbase from 'localbase'
 
 let db = new Localbase('db')
@@ -16,6 +21,10 @@ Vue.use(VueAxios, axios)
 export default new Vuex.Store({
   state: {
     searchTerm: null,
+    user: {
+      loggedIn: false,
+      data: null
+    },
     dog: [],
     dogs: [
       {
@@ -43,9 +52,66 @@ export default new Vuex.Store({
     },
     SET_DOGS(state, dogs) {
       state.dog = dogs
-    }
+    },
+    SET_USER(state, user) {
+      state.user.data = user
+      console.log(user)
+    },
+    SET_LOGGED_IN(state, value) {
+      state.user.loggedIn = value;
+    },
   },
   actions: {
+    login({ commit }, path) {
+      // FirebaseUI config.
+      var uiConfig = {
+        callbacks: {
+          signInSuccessWithAuthResult: function (authResult) {
+            console.log("user " + authResult)
+            // var user = authResult.user;
+            // var credential = authResult.credential;
+            // var isNewUser = authResult.additionalUserInfo.isNewUser;
+            // var providerId = authResult.additionalUserInfo.providerId;
+            // var operationType = authResult.operationType;
+            // Do something with the returned AuthResult.
+            // Return type determines whether we continue the redirect
+            // automatically or whether we leave that to developer to handle.
+            commit("SET_LOGGED_IN", true);
+            commit("SET_USER", authResult);
+            // set to false, such that we a developer can redirect
+            return false;
+          },
+          signInFailure: function (error) {
+            // Some unrecoverable error occurred during sign-in.
+            // Return a promise when error handling is completed and FirebaseUI
+            // will reset, clearing any UI. This commonly occurs for error code
+            // 'firebaseui/anonymous-upgrade-merge-conflict' when merge conflict
+            // occurs. Check below for more details on this.
+            console.log("error " + error)
+            return false;
+          }
+        },
+        signInFlow: 'popup',
+        signInSuccessUrl: path,
+        signInOptions: [
+          // Leave the lines as is for the providers you want to offer your users.
+          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        ],
+        // tosUrl and privacyPolicyUrl accept either url string or a callback
+        // function.
+        // Terms of service url/callback.
+        // tosUrl: "<your-tos-url>",
+        // Privacy policy url/callback.
+        // privacyPolicyUrl: function () {
+        //   window.location.assign("<your-privacy-policy-url>");
+        // },
+      };
+
+      // Initialize the FirebaseUI Widget using Firebase.
+      var ui = new firebaseui.auth.AuthUI(firebase.auth());
+      // The start method will wait until the DOM is loaded.
+      ui.start("#firebaseui-auth-container", uiConfig);
+    },
     getAllDogs(
       { commit }
     ) {
@@ -84,3 +150,4 @@ export default new Vuex.Store({
   modules: {
   }
 })
+

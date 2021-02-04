@@ -1,6 +1,8 @@
 <template>
   <v-main class="pa-0">
     <v-container fluid>
+      <div>user : {{$store.state.user}}</div>
+      <section class="pa-3" id="firebaseui-auth-container"></section>
       <v-row>
         <v-col
           v-for="card in $store.getters.filteredDogs"
@@ -9,101 +11,7 @@
           sm="4"
           md="3"
         >
-          <!-- <v-card>
-            <v-img
-              lazy-src="https://picsum.photos/id/11/10/6"
-              :src="card.url"
-              class="white--text align-end"
-              gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-              height="200px"
-            >
-              <v-card-title v-text="card.name"></v-card-title>
-            </v-img>
-            <v-card-actions>
-              <v-btn color="primary" outlined icon>
-                <v-icon>mdi-heart</v-icon>
-              </v-btn>
-
-              <v-btn color="primary" icon>
-                <v-icon>mdi-share-variant</v-icon>
-              </v-btn>
-              <v-spacer></v-spacer>
-              <v-btn class="pa-3" icon color="primary" light>
-                <v-icon left> mdi-more </v-icon>
-              </v-btn>
-              <v-btn class="pa-3" icon color="primary" light>
-                <v-icon left> mdi-cart-plus </v-icon>
-              </v-btn>
-            </v-card-actions>
-          </v-card> -->
-          <v-card class="mx-auto" max-width="344">
-            <v-img
-              lazy-src="https://picsum.photos/id/11/10/6"
-              :src="card.url"
-              class="white--text align-end"
-              gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-              height="200px"
-            ></v-img>
-
-            <v-card-title v-text="card.name">
-              Top western road trips
-            </v-card-title>
-
-            <v-card-subtitle v-text="card.bred_for">
-            </v-card-subtitle>
-
-            <v-card-actions class="pt-0">
-              <v-btn color="primary lighten-2" text> More </v-btn>
-
-              <v-spacer></v-spacer>
-
-              <v-btn icon @click="show = !show">
-                <v-icon>{{
-                  show ? "mdi-chevron-up" : "mdi-chevron-down"
-                }}</v-icon>
-              </v-btn>
-            </v-card-actions>
-
-            <v-expand-transition>
-              <div v-show="show">
-                <v-divider></v-divider>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>life_span</v-list-item-title>
-                    <v-list-item-subtitle
-                      v-html="card.life_span"
-                    ></v-list-item-subtitle>
-                    <v-list-item-title class="pt-3">temperament</v-list-item-title>
-                    <v-list-item-subtitle
-                      v-html="card.temperament"
-                    ></v-list-item-subtitle>
-                    <v-list-item-title class="pt-3">weight</v-list-item-title>
-                    <v-list-item-subtitle
-                      v-html="card.weight.imperial"
-                    ></v-list-item-subtitle>
-                     <v-list-item-title class="pt-3">height</v-list-item-title>
-                    <v-list-item-subtitle
-                      v-html="card.height.imperial"
-                    ></v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-card-actions>
-                  <v-btn color="primary" outlined icon>
-                    <v-icon>mdi-heart</v-icon>
-                  </v-btn>
-
-                  <v-btn color="primary" icon>
-                    <v-icon>mdi-share-variant</v-icon>
-                  </v-btn>
-                  <v-spacer></v-spacer>
-
-                  <v-btn class="pa-3" icon color="primary" light>
-                    <v-icon left> mdi-cart-plus </v-icon>
-                  </v-btn>
-                </v-card-actions>
-              </div>
-            </v-expand-transition>
-          </v-card>
+          <DogCard :card="card" @log-in="like" />
         </v-col>
       </v-row>
     </v-container>
@@ -112,17 +20,38 @@
 
 <script>
 import { mapState } from "vuex";
+import DogCard from "../components/tools/Card";
+import firebase from "firebase";
 
 export default {
   name: "Home",
+  components: {
+    DogCard,
+  },
   data() {
-    return {
-      show: false,
-    };
+    return {};
   },
   computed: mapState(["dog"]),
   mounted() {
     this.$store.dispatch("getAllDogs");
+  },
+  methods: {
+    like() {
+      // stay on current page, do not redirect
+      const vm = this;
+      //check if a user is already signed in, or else show the sign in popup
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+          // User is signed in// do an action like liking
+          console.log("user already signed in " + vm.$store.state.user);
+        } else {
+          // No user is signed in, fire sign in action.
+          console.log("no user signed in");
+          // trigger login action and pass in the path to redirect to.
+          vm.$store.dispatch("login", "/");
+        }
+      });
+    },
   },
 };
 </script>
